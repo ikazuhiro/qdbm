@@ -79,29 +79,28 @@
   } while(FALSE)
 
 /* get the first hash value */
-#define CB_FIRSTHASH(CB_res, CB_kbuf, CB_ksiz) \
-  do { \
-    const unsigned char *_CB_p; \
-    int _CB_ksiz; \
-    _CB_p = (const unsigned char *)(CB_kbuf); \
-    _CB_ksiz = CB_ksiz; \
-    for((CB_res) = 19780211; _CB_ksiz--;){ \
-      (CB_res) = (CB_res) * 37 + *(_CB_p)++; \
-    } \
-    (CB_res) &= INT_MAX; \
+#define CB_FIRSTHASH(CB_res, CB_kbuf, CB_ksiz)			   \
+  do {								   \
+    const unsigned char *_CB_p = (const unsigned char *)(CB_kbuf); \
+    int _CB_ksiz = (CB_ksiz);					   \
+    unsigned int _CB_res;					   \
+    for(_CB_res = 19780211; _CB_ksiz--; _CB_p++){		   \
+      _CB_res = _CB_res * 37 + *_CB_p;				   \
+    }								   \
+    (CB_res) = _CB_res & INT_MAX;				   \
   } while(FALSE)
 
 /* get the second hash value */
-#define CB_SECONDHASH(CB_res, CB_kbuf, CB_ksiz) \
-  do { \
-    const unsigned char *_CB_p; \
-    int _CB_ksiz; \
-    _CB_p = (const unsigned char *)(CB_kbuf) + CB_ksiz - 1; \
-    _CB_ksiz = CB_ksiz; \
-    for((CB_res) = 0x13579bdf; _CB_ksiz--;){ \
-      (CB_res) = (CB_res) * 31 + *(_CB_p)--; \
-    } \
-    (CB_res) &= INT_MAX; \
+#define CB_SECONDHASH(CB_res, CB_kbuf, CB_ksiz)		\
+  do {							\
+    const unsigned char *_CB_p =			\
+      (const unsigned char *)(CB_kbuf) + (CB_ksiz) - 1;	\
+    int _CB_ksiz = (CB_ksiz);				\
+    unsigned int _CB_res;				\
+    for(_CB_res = 0x13579bdf; _CB_ksiz--; _CB_p--){	\
+      _CB_res = _CB_res * 31 + *_CB_p;			\
+    }							\
+    (CB_res) = _CB_res & INT_MAX;			\
   } while(FALSE)
 
 

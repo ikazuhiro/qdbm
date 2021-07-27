@@ -41,45 +41,45 @@
 #define DP_IOBUFSIZ    8192              /* size of an I/O buffer */
 
 /* get the first hash value */
-#define DP_FIRSTHASH(DP_res, DP_kbuf, DP_ksiz) \
-  do { \
-    const unsigned char *_DP_p; \
-    int _DP_ksiz; \
-    _DP_p = (const unsigned char *)(DP_kbuf); \
-    _DP_ksiz = DP_ksiz; \
-    if((_DP_ksiz) == sizeof(int)){ \
-      memcpy(&(DP_res), (DP_kbuf), sizeof(int)); \
-    } else { \
-      (DP_res) = 751; \
-    } \
-    while(_DP_ksiz--){ \
-      (DP_res) = (DP_res) * 31 + *(_DP_p)++; \
-    } \
-    (DP_res) = ((DP_res) * 87767623) & INT_MAX; \
+#define DP_FIRSTHASH(DP_res, DP_kbuf, DP_ksiz)				\
+  do {									\
+    const unsigned char *_DP_p = (const unsigned char *)(DP_kbuf);	\
+    int _DP_ksiz = (DP_ksiz);						\
+    unsigned int _DP_res;						\
+    if((_DP_ksiz) == sizeof(int)){					\
+      memcpy(&_DP_res, _DP_p, sizeof(int));				\
+    } else {								\
+      _DP_res = 751;							\
+    }									\
+    while(_DP_ksiz--){							\
+      _DP_res = _DP_res * 31 + *_DP_p;					\
+      _DP_p++;								\
+    }									\
+    (DP_res) = (_DP_res * 87767623) & INT_MAX;				\
   } while(FALSE)
 
 /* get the second hash value */
-#define DP_SECONDHASH(DP_res, DP_kbuf, DP_ksiz) \
-  do { \
-    const unsigned char *_DP_p; \
-    int _DP_ksiz; \
-    _DP_p = (const unsigned char *)(DP_kbuf) + DP_ksiz - 1; \
-    _DP_ksiz = DP_ksiz; \
-    for((DP_res) = 19780211; _DP_ksiz--;){ \
-      (DP_res) = (DP_res) * 37 + *(_DP_p)--; \
-    } \
-    (DP_res) = ((DP_res) * 43321879) & INT_MAX; \
+#define DP_SECONDHASH(DP_res, DP_kbuf, DP_ksiz)		\
+  do {							\
+    const unsigned char *_DP_p =			\
+      (const unsigned char *)(DP_kbuf) + (DP_ksiz) - 1;	\
+    int _DP_ksiz = (DP_ksiz);				\
+    unsigned int _DP_res;				\
+    for(_DP_res = 19780211; _DP_ksiz--; _DP_p--){	\
+      _DP_res = _DP_res * 37 + *_DP_p;			\
+    }							\
+    (DP_res) = (_DP_res * 43321879) & INT_MAX;		\
   } while(FALSE)
 
 /* get the third hash value */
-#define DP_THIRDHASH(DP_res, DP_kbuf, DP_ksiz) \
-  do { \
-    int _DP_i; \
-    (DP_res) = 774831917; \
-    for(_DP_i = (DP_ksiz) - 1; _DP_i >= 0; _DP_i--){ \
-      (DP_res) = (DP_res) * 29 + ((const unsigned char *)(DP_kbuf))[_DP_i]; \
-    } \
-    (DP_res) = ((DP_res) * 5157883) & INT_MAX; \
+#define DP_THIRDHASH(DP_res, DP_kbuf, DP_ksiz)				\
+  do {									\
+    int _DP_i;								\
+    unsigned int _DP_res = 774831917;					\
+    for(_DP_i = (DP_ksiz) - 1; _DP_i >= 0; _DP_i--){			\
+      _DP_res = _DP_res * 29 + ((const unsigned char *)(DP_kbuf))[_DP_i]; \
+    }									\
+    (DP_res) = (_DP_res * 5157883) & INT_MAX;				\
   } while(FALSE)
 
 enum {                                   /* enumeration for a record header */
