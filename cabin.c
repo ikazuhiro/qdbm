@@ -703,6 +703,7 @@ void cbdatumprintf(CBDATUM *datum, const char *format, ...){
 char *cbdatumtomalloc(CBDATUM *datum, int *sp){
   char *ptr;
   assert(datum);
+  if(sp) *sp = 0;
   ptr = datum->dptr;
   if(sp) *sp = datum->dsize;
   free(datum);
@@ -760,6 +761,7 @@ int cblistnum(const CBLIST *list){
 /* Get the pointer to the region of an element. */
 const char *cblistval(const CBLIST *list, int index, int *sp){
   assert(list && index >= 0);
+  if(sp) *sp = 0;
   if(index >= list->num) return NULL;
   index += list->start;
   if(sp) *sp = list->array[index].dsize;
@@ -789,6 +791,7 @@ void cblistpush(CBLIST *list, const char *ptr, int size){
 char *cblistpop(CBLIST *list, int *sp){
   int index;
   assert(list);
+  if(sp) *sp = 0;
   if(list->num < 1) return NULL;
   index = list->start + list->num - 1;
   list->num--;
@@ -824,6 +827,7 @@ void cblistunshift(CBLIST *list, const char *ptr, int size){
 char *cblistshift(CBLIST *list, int *sp){
   int index;
   assert(list);
+  if(sp) *sp = 0;
   if(list->num < 1) return NULL;
   index = list->start;
   list->start++;
@@ -855,6 +859,7 @@ void cblistinsert(CBLIST *list, int index, const char *ptr, int size){
 char *cblistremove(CBLIST *list, int index, int *sp){
   char *dptr;
   assert(list && index >= 0);
+  if(sp) *sp = 0;
   if(index >= list->num) return NULL;
   index += list->start;
   dptr = list->array[index].dptr;
@@ -920,6 +925,7 @@ char *cblistdump(const CBLIST *list, int *sp){
   const char *vbuf;
   int i, bsiz, vnumsiz, ln, vsiz;
   assert(list && sp);
+  if(sp) *sp = 0;
   ln = CB_LISTNUM(list);
   CB_SETVNUMBUF(vnumsiz, vnumbuf, ln);
   CB_MALLOC(buf, vnumsiz + 1);
@@ -1245,6 +1251,7 @@ const char *cbmapget(const CBMAP *map, const char *kbuf, int ksiz, int *sp){
   char *dbuf;
   int hash, kcmp;
   assert(map && kbuf);
+  if(sp) *sp = 0;
   if(ksiz < 0) ksiz = strlen(kbuf);
   CB_FIRSTHASH(hash, kbuf, ksiz);
   datum = map->buckets[hash%map->bnum];
@@ -1332,6 +1339,7 @@ void cbmapiterinit(CBMAP *map){
 const char *cbmapiternext(CBMAP *map, int *sp){
   CBMAPDATUM *datum;
   assert(map);
+  if(sp) *sp = 0;
   if(!map->cur) return NULL;
   datum = map->cur;
   map->cur = datum->next;
@@ -1344,6 +1352,7 @@ const char *cbmapiternext(CBMAP *map, int *sp){
 const char *cbmapiterval(const char *kbuf, int *sp){
   CBMAPDATUM *datum;
   assert(kbuf);
+  if(sp) *sp = 0;
   datum = (CBMAPDATUM *)(kbuf - sizeof(*datum));
   if(sp) *sp = datum->vsiz;
   return (char *)datum + sizeof(*datum) + datum->ksiz + CB_ALIGNPAD(datum->ksiz);
@@ -1396,6 +1405,7 @@ char *cbmapdump(CBMAP *map, int *sp){
   const char *kbuf, *vbuf;
   int bsiz, vnumsiz, rn, ksiz, vsiz;
   assert(map && sp);
+  if(sp) *sp = 0;
   rn = cbmaprnum(map);
   CB_SETVNUMBUF(vnumsiz, vnumbuf, rn);
   CB_MALLOC(buf, vnumsiz + 1);
@@ -1417,7 +1427,7 @@ char *cbmapdump(CBMAP *map, int *sp){
     memcpy(buf + bsiz, vbuf, vsiz);
     bsiz += vsiz;
   }
-  *sp = bsiz;
+  if(sp) *sp = bsiz;
   return buf;
 }
 
@@ -1461,6 +1471,7 @@ char *cbmaploadone(const char *ptr, int size, const char *kbuf, int ksiz, int *s
   char *rv;
   int i, step, rn, tksiz, vsiz;
   assert(ptr && size >= 0 && kbuf);
+  if(sp) *sp = 0;
   if(ksiz < 0) ksiz = strlen(kbuf);
   rp = ptr;
   CB_READVNUMBUF(rp, size, rn, step);
@@ -1488,6 +1499,7 @@ char *cbmaploadone(const char *ptr, int size, const char *kbuf, int ksiz, int *s
       return rv;
     }
   }
+  if(sp) *sp = 0;
   return NULL;
 }
 
@@ -1590,6 +1602,7 @@ const void *cbheapval(CBHEAP *heap, int index){
 void *cbheaptomalloc(CBHEAP *heap, int *np){
   char *ptr;
   assert(heap);
+  if(np) *np = 0;
   qsort(heap->base, heap->num, heap->size, heap->compar);
   ptr = heap->base;
   if(np) *np = heap->num;
@@ -1750,6 +1763,7 @@ char *cbreadfile(const char *name, int *sp){
   char iobuf[CB_IOBUFSIZ], *buf;
   int fd, size, asiz, rv;
   asiz = CB_IOBUFSIZ * 2;
+  if(sp) *sp = 0;
   if(name){
     if((fd = open(name, O_RDONLY, 0)) == -1) return NULL;
     if(fstat(fd, &sbuf) != -1) asiz = sbuf.st_size + 1;
@@ -2174,6 +2188,7 @@ char *cburlencode(const char *ptr, int size){
 char *cburldecode(const char *str, int *sp){
   char *buf, *wp;
   unsigned char c;
+  if(sp) *sp = 0;
   CB_MEMDUP(buf, str, strlen(str));
   wp = buf;
   while(*str != '\0'){
@@ -2264,6 +2279,7 @@ char *cbbasedecode(const char *str, int *sp){
   unsigned char *obj, *wp;
   int len, cnt, bpos, i, bits, eqcnt;
   assert(str);
+  if(sp) *sp = 0;
   cnt = 0;
   bpos = 0;
   eqcnt = 0;
@@ -2349,6 +2365,7 @@ char *cbquoteencode(const char *ptr, int size){
 char *cbquotedecode(const char *str, int *sp){
   char *buf, *wp;
   assert(str);
+  if(sp) *sp = 0;
   CB_MALLOC(buf, strlen(str) + 1);
   wp = buf;
   for(; *str != '\0'; str++){
@@ -2395,6 +2412,7 @@ char *cbmimebreak(const char *ptr, int size, CBMAP *attrs, int *sp){
   char *hbuf, *name, *rv;
   int i, j, wi, hlen;
   assert(ptr);
+  if(sp) *sp = 0;
   if(size < 0) size = strlen(ptr);
   head = NULL;
   hlen = 0;
@@ -2723,18 +2741,19 @@ char *cbcsvunescape(const char *str){
 }
 
 
-/* Split a string of XML into tags and text sections. */
-CBLIST *cbxmlbreak(const char *str, int cr){
+/* Split a string of XML into tags and text sections with length. */
+CBLIST *cbxmlbreakwlen(const char *str, int len, int cr){
   CBLIST *list;
   CBDATUM *datum;
   int i, pv, tag;
   char *ep;
   assert(str);
+  if(len < 0) len = strlen(str);
   CB_LISTOPEN(list);
   i = 0;
   pv = 0;
   tag = FALSE;
-  while(TRUE){
+  while(i < len){
     if(str[i] == '\0'){
       if(i > pv) CB_LISTPUSH(list, str + pv, i - pv);
       break;
@@ -2781,6 +2800,12 @@ CBLIST *cbxmlbreak(const char *str, int cr){
     i++;
   }
   return list;
+}
+
+
+/* Split a string of XML into tags and text sections with length. */
+CBLIST *cbxmlbreak(const char *str, int cr){
+  return cbxmlbreakwlen(str, -1, cr);
 }
 
 
@@ -2917,6 +2942,7 @@ char *cbxmlunescape(const char *str){
 /* Compress a serial object with ZLIB. */
 char *cbdeflate(const char *ptr, int size, int *sp){
   assert(ptr && sp);
+  if(sp) *sp = 0;
   if(!_qdbm_deflate) return NULL;
   return _qdbm_deflate(ptr, size, sp, _QDBM_ZMZLIB);
 }
@@ -2925,6 +2951,7 @@ char *cbdeflate(const char *ptr, int size, int *sp){
 /* Decompress a serial object compressed with ZLIB. */
 char *cbinflate(const char *ptr, int size, int *sp){
   assert(ptr && size >= 0);
+  if(sp) *sp = 0;
   if(!_qdbm_inflate) return NULL;
   return _qdbm_inflate(ptr, size, sp, _QDBM_ZMZLIB);
 }
@@ -2933,6 +2960,7 @@ char *cbinflate(const char *ptr, int size, int *sp){
 /* Compress a serial object with GZIP. */
 char *cbgzencode(const char *ptr, int size, int *sp){
   assert(ptr && sp);
+  if(sp) *sp = 0;
   if(!_qdbm_deflate) return NULL;
   return _qdbm_deflate(ptr, size, sp, _QDBM_ZMGZIP);
 }
@@ -2941,6 +2969,7 @@ char *cbgzencode(const char *ptr, int size, int *sp){
 /* Decompress a serial object compressed with GZIP. */
 char *cbgzdecode(const char *ptr, int size, int *sp){
   assert(ptr && size >= 0);
+  if(sp) *sp = 0;
   if(!_qdbm_inflate) return NULL;
   return _qdbm_inflate(ptr, size, sp, _QDBM_ZMGZIP);
 }
@@ -2957,6 +2986,7 @@ unsigned int cbgetcrc(const char *ptr, int size){
 /* Compress a serial object with LZO. */
 char *cblzoencode(const char *ptr, int size, int *sp){
   assert(ptr && sp);
+  if(sp) *sp = 0;
   if(!_qdbm_lzoencode) return NULL;
   return _qdbm_lzoencode(ptr, size, sp);
 }
@@ -2965,6 +2995,7 @@ char *cblzoencode(const char *ptr, int size, int *sp){
 /* Decompress a serial object compressed with LZO. */
 char *cblzodecode(const char *ptr, int size, int *sp){
   assert(ptr && size >= 0);
+  if(sp) *sp = 0;
   if(!_qdbm_lzodecode) return NULL;
   return _qdbm_lzodecode(ptr, size, sp);
 }
@@ -2973,6 +3004,7 @@ char *cblzodecode(const char *ptr, int size, int *sp){
 /* Compress a serial object with BZIP2. */
 char *cbbzencode(const char *ptr, int size, int *sp){
   assert(ptr && sp);
+  if(sp) *sp = 0;
   if(!_qdbm_bzencode) return NULL;
   return _qdbm_bzencode(ptr, size, sp);
 }
@@ -2981,6 +3013,7 @@ char *cbbzencode(const char *ptr, int size, int *sp){
 /* Decompress a serial object compressed with BZIP2. */
 char *cbbzdecode(const char *ptr, int size, int *sp){
   assert(ptr && size >= 0);
+  if(sp) *sp = 0;
   if(!_qdbm_bzdecode) return NULL;
   return _qdbm_bzdecode(ptr, size, sp);
 }
@@ -2990,6 +3023,7 @@ char *cbbzdecode(const char *ptr, int size, int *sp){
 char *cbiconv(const char *ptr, int size, const char *icode, const char *ocode, int *sp, int *mp){
   char *res;
   assert(ptr && icode && ocode);
+  if(sp) *sp = 0;
   if(!_qdbm_iconv) return NULL;
   if((res = _qdbm_iconv(ptr, size, icode, ocode, sp, mp)) != NULL) return res;
   if(!cbstricmp(icode, ocode)){

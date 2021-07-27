@@ -1005,6 +1005,14 @@ char *cbcsvescape(const char *str);
 char *cbcsvunescape(const char *str);
 
 
+/* Split a string of XML into tags and text sections with length.
+   `str' specifies the pointer to the region of an XML string.
+   `len' specifies length of str
+   `cr' specifies whether to remove comments.
+   This function is also the same as cbxmlbreak() */
+CBLIST *cbxmlbreakwlen(const char *str, int len, int cr);
+
+
 /* Split a string of XML into tags and text sections.
    `str' specifies the pointer to the region of an XML string.
    `cr' specifies whether to remove comments.
