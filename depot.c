@@ -114,7 +114,7 @@ static int dppadsize(DEPOT *depot, int ksiz, int vsiz);
 static int dprecsize(int *head);
 static int dprechead(DEPOT *depot, int off, int *head, char *ebuf, int *eep);
 static char *dpreckey(DEPOT *depot, int off, int *head);
-static char *dprecval(DEPOT *depot, int off, int *head, int start, int max);
+static char *dprecval(DEPOT *depot, int off, int *head, int start, int max, int *sp);
 static int dprecvalwb(DEPOT *depot, int off, int *head, int start, int max, char *vbuf);
 static int dpkeycmp(const char *abuf, int asiz, const char *bbuf, int bsiz);
 static int dprecsearch(DEPOT *depot, const char *kbuf, int ksiz, int hash, int *bip, int *offp,
@@ -413,7 +413,7 @@ int dpput(DEPOT *depot, const char *kbuf, int ksiz, const char *vbuf, int vsiz, 
           }
           memcpy(tval, ebuf + (DP_RHNUM * sizeof(int) + head[DP_RHIKSIZ]), head[DP_RHIVSIZ]);
         } else {
-          if(!(tval = dprecval(depot, off, head, 0, -1))){
+          if(!(tval = dprecval(depot, off, head, 0, -1, NULL))){
             depot->fatal = TRUE;
             return FALSE;
           }
@@ -568,7 +568,7 @@ char *dpget(DEPOT *depot, const char *kbuf, int ksiz, int start, int max, int *s
     memcpy(vbuf, ebuf + (DP_RHNUM * sizeof(int) + head[DP_RHIKSIZ] + start), vsiz);
     vbuf[vsiz] = '\0';
   } else {
-    if(!(vbuf = dprecval(depot, off, head, start, max))){
+    if(!(vbuf = dprecval(depot, off, head, start, max, &vsiz))){
       depot->fatal = TRUE;
       return NULL;
     }
@@ -837,11 +837,11 @@ int dpoptimize(DEPOT *depot, int bnum){
           memcpy(vbufs[unum], ebuf + (DP_RHNUM * sizeof(int) + head[DP_RHIKSIZ]),
                  head[DP_RHIVSIZ]);
         } else {
-          vbufs[unum] = dprecval(depot, off, head, 0, -1);
+          vbufs[unum] = dprecval(depot, off, head, 0, -1, NULL);
         }
       } else {
         kbufs[unum] = dpreckey(depot, off, head);
-        vbufs[unum] = dprecval(depot, off, head, 0, -1);
+        vbufs[unum] = dprecval(depot, off, head, 0, -1, NULL);
       }
       ksizs[unum] = head[DP_RHIKSIZ];
       vsizs[unum] = head[DP_RHIVSIZ];
@@ -1851,8 +1851,9 @@ static char *dpreckey(DEPOT *depot, int off, int *head){
    `head' specifies the header of a record.
    `start' specifies the offset address of the beginning of the region of the value to be read.
    `max' specifies the max size to be read.  If it is negative, the size to read is unlimited.
+   `sp' specifies the pointer to return the size of the netity.
    The return value is a value data whose region is allocated by `malloc', or NULL on failure. */
-static char *dprecval(DEPOT *depot, int off, int *head, int start, int max){
+static char *dprecval(DEPOT *depot, int off, int *head, int start, int max, int *sp){
   char *vbuf;
   int vsiz;
   assert(depot && off >= 0 && start >= 0);
@@ -1872,6 +1873,10 @@ static char *dprecval(DEPOT *depot, int off, int *head, int start, int max){
   }
   vbuf[vsiz] = '\0';
   return vbuf;
+
+  if (sp){
+    *sp = vsiz;
+  }
 }
 
 
