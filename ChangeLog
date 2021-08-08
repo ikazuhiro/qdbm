@@ -1,3 +1,7 @@
+2021-08-08  Kazuhiro Ito  <kzhr@d1.dion.ne.jp>
+
+	* cabin.c (cbsprintf): Use vsnprintf instead of own routine.
+
 2007-12-22  Mikio Hirabayashi  <mikio@fallabs.com>
 
 	- Converters from Depot/Curia/Villa to TCHDB/TCBDB were added.

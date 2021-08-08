@@ -1614,68 +1614,25 @@ void *cbheaptomalloc(CBHEAP *heap, int *np){
 /* Allocate a formatted string on memory. */
 char *cbsprintf(const char *format, ...){
   va_list ap;
-  char *buf, cbuf[CB_SPBUFSIZ], *str;
-  int len, cblen, num, slen;
-  unsigned int unum;
-  double dnum;
+  int size;
+  char *buf;
+
   va_start(ap, format);
-  assert(format);
-  CB_MALLOC(buf, 1);
-  len = 0;
-  while(*format != '\0'){
-    if(*format == '%'){
-      cbuf[0] = '%';
-      cblen = 1;
-      format++;
-      while(strchr("0123456789 .+-", *format) && *format != '\0' && cblen < CB_SPBUFSIZ - 1){
-        cbuf[cblen++] = *format;
-        format++;
-      }
-      cbuf[cblen] = '\0';
-      if(atoi(cbuf + 1) > CB_SPMAXWIDTH - 16){
-        sprintf(cbuf, "(err)");
-      } else {
-        cbuf[cblen++] = *format;
-        cbuf[cblen] = '\0';
-      }
-      switch(*format){
-      case 'd':
-        num = va_arg(ap, int);
-        CB_REALLOC(buf, len + CB_SPMAXWIDTH + 2);
-        len += sprintf(buf + len, cbuf, num);
-        break;
-      case 'o': case 'u': case 'x': case 'X': case 'c':
-        unum = va_arg(ap, unsigned int);
-        CB_REALLOC(buf, len + CB_SPMAXWIDTH + 2);
-        len += sprintf(buf + len, cbuf, unum);
-        break;
-      case 'e': case 'E': case 'f': case 'g': case 'G':
-        dnum = va_arg(ap, double);
-        CB_REALLOC(buf, len + CB_SPMAXWIDTH + 2);
-        len += sprintf(buf + len, cbuf, dnum);
-        break;
-      case 's':
-        str = va_arg(ap, char *);
-        slen = strlen(str);
-        CB_REALLOC(buf, len + slen + 2);
-        memcpy(buf + len, str, slen);
-        len += slen;
-        break;
-      case '%':
-        CB_REALLOC(buf, len + 2);
-        buf[len++] = '%';
-        break;
-      default:
-        break;
-      }
-    } else {
-      CB_REALLOC(buf, len + 2);
-      buf[len++] = *format;
-    }
-    format++;
-  }
-  buf[len] = '\0';
+  size = vsnprintf(NULL, 0, format, ap);
+  if(size < 0) goto error;
   va_end(ap);
+  CB_MALLOC(buf, size + 1);
+
+  va_start(ap, format);
+  if(vsnprintf(buf, size + 1, format, ap) != size) {
+    goto error;
+  }
+  va_end(ap);
+  return buf;
+
+ error:
+  va_end(ap);
+  CB_MEMDUP(buf, format, strlen(format));
   return buf;
 }
 
